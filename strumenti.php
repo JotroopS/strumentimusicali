@@ -22,7 +22,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && isset($_SE
     $stmt->execute();
     $stmt->bind_result($nome, $cognome);
     $stmt->fetch();
-    $stmt->close();  // Chiusura dello statement per evitare il comando fuori sincrono
+    $stmt->close();
 }
 
 // Leggi categoria da GET
@@ -37,17 +37,17 @@ if ($categoriaId > 0) {
     $catQuery->execute();
     $catQuery->bind_result($categoriaNome);
     $catQuery->fetch();
-    $catQuery->close();  // Chiusura dello statement per evitare il comando fuori sincrono
+    $catQuery->close();
 
-    // Prendi strumenti
-    $query = $conn->prepare("SELECT nome, prezzo, immagine FROM strumenti WHERE id_categoria = ?");
+    // Prendi strumenti dal database
+    $query = $conn->prepare("SELECT id, marca, modello, prezzo, immagine FROM strumenti WHERE id_categoria = ?");
     $query->bind_param("i", $categoriaId);
     $query->execute();
     $result = $query->get_result();
     while ($row = $result->fetch_assoc()) {
         $strumenti[] = $row;
     }
-    $query->close();  // Chiusura dello statement per evitare il comando fuori sincrono
+    $query->close();
 }
 ?>
 
@@ -56,22 +56,16 @@ if ($categoriaId > 0) {
 <head>
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($categoriaNome); ?> - AudioCore</title>
-    <link rel="stylesheet" href="path_to_your_styles.css"> <!-- Se c'è un file CSS globale -->
     <style>
-        /* Header e footer - Aggiungi gli stili di home.php */
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f9f9f9; }
-        
-        /* Header */
+
         header {
-            background: #222222;  /* Colore dello sfondo dell'header (nero scuro) */
+            background: #222222;
             color: white;
             padding: 20px 0;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        header .logo {
-            font-size: 1.5em;
-            margin-left: 20px;
-        }
+        header .logo { font-size: 1.5em; margin-left: 20px; }
         header nav {
             display: flex;
             justify-content: flex-end;
@@ -84,9 +78,8 @@ if ($categoriaId > 0) {
             font-size: 1.1em;
         }
 
-        /* Footer */
         footer {
-            background: #222222;  /* Colore dello sfondo del footer (nero scuro) */
+            background: #222222;
             color: white;
             padding: 15px 20px;
             text-align: center;
@@ -96,20 +89,66 @@ if ($categoriaId > 0) {
             box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
         }
 
-        /* Contenuto */
         .container { padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
         .card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
             text-align: center;
-            padding: 10px;
+            padding: 20px;
+            height: 420px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease; /* Aggiunta la transizione per ingrandire */
         }
-        .card img { width: 100%; height: 180px; object-fit: contain; }
-        .card h3 { margin: 10px 0; font-size: 1.1em; }
-        .card p { color: #1c87c9; font-weight: bold; }
+
+        .card:hover {
+            transform: scale(1.05); /* Effetto di ingrandimento al passaggio del mouse */
+        }
+
+        .card img {
+            width: 100%;
+            height: 250px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        .card p {
+            color: #1c87c9;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .card form {
+            margin-top: auto;
+        }
+
+        .card button {
+            background-color: #1c87c9;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .card button:hover {
+            background-color: #155a8a;
+        }
     </style>
 </head>
 <body>
@@ -119,8 +158,7 @@ if ($categoriaId > 0) {
         <div class="logo">AudioCore</div>
         <nav>
             <a href="home.php">Home</a>
-            <a href="categoria.php">Categorie</a>
-            <a href="carrello.php">Carrello</a>
+<a href="#" onclick="vaiAlCarrello(event)">Carrello</a>
             <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true): ?>
                 <a href="logout.php">Logout</a>
             <?php else: ?>
@@ -136,10 +174,13 @@ if ($categoriaId > 0) {
         <?php if (!empty($strumenti)): ?>
             <?php foreach ($strumenti as $strumento): ?>
                 <div class="card">
-                    <img src="<?php echo htmlspecialchars($strumento['immagine']); ?>" alt="<?php echo htmlspecialchars($strumento['nome']); ?>">
-                    <h3><?php echo htmlspecialchars($strumento['nome']); ?></h3>
-                    <p>€ <?php echo number_format($strumento['prezzo'], 2, ',', '.'); ?></p>
-                </div>
+    <a href="dettagli.php?id=<?php echo $strumento['id']; ?>" style="text-decoration: none; color: inherit;">
+        <img src="<?php echo htmlspecialchars($strumento['immagine']); ?>" alt="<?php echo htmlspecialchars($strumento['marca']); ?>">
+        <h3><?php echo htmlspecialchars($strumento['marca']) . ' ' . htmlspecialchars($strumento['modello']); ?></h3>
+        <p>€ <?php echo number_format($strumento['prezzo'], 2, ',', '.'); ?></p>
+    </a>
+</div>
+
             <?php endforeach; ?>
         <?php else: ?>
             <p>Nessun prodotto trovato in questa categoria.</p>
@@ -150,6 +191,17 @@ if ($categoriaId > 0) {
 <footer>
     &copy; 2025 AudioCore. Tutti i diritti riservati.
 </footer>
+<script>
+    function vaiAlCarrello(event) {
+        event.preventDefault();
+        const isLoggedIn = <?php echo isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true ? 'true' : 'false'; ?>;
+        if (isLoggedIn) {
+            window.location.href = 'carrello.php';
+        } else {
+            window.location.href = 'login.php';
+        }
+    }
+</script>
 
 </body>
 </html>

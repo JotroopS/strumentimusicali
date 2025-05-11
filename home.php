@@ -371,12 +371,11 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && isset($_SE
                     <img src="https://img.icons8.com/ios-filled/50/user.png" alt="User">
                 </a>
             <?php endif; ?>
-            <a href="#">
-                <img src="https://img.icons8.com/ios-filled/50/like.png" alt="Cuore">
-            </a>
-            <a href="#">
-                <img src="https://img.icons8.com/ios-filled/50/shopping-cart.png" alt="Carrello">
-            </a>
+            <a href="#" onclick="vaiAlCarrello(event)">
+    <img src="https://img.icons8.com/ios-filled/50/shopping-cart.png" alt="Carrello">
+</a>
+
+
         </div>
     </header>
 
@@ -442,6 +441,17 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && isset($_SE
             category.classList.toggle('active');
         });
     });
+</script>
+<script>
+    function vaiAlCarrello(event) {
+        event.preventDefault();
+        const isLoggedIn = <?php echo isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true ? 'true' : 'false'; ?>;
+        if (isLoggedIn) {
+            window.location.href = 'carrello.php';
+        } else {
+            window.location.href = 'login.php';
+        }
+    }
 </script>
 
 </body>

@@ -14,6 +14,8 @@ if ($conn->connect_error) {
     die("Connessione fallita: " . $conn->connect_error);
 }
 
+$error = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
@@ -33,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['loggedin'] = true;
                 $_SESSION['nome'] = $user['nome'];
                 $_SESSION['cognome'] = $user['cognome'];
-                $_SESSION['user_id'] = $user['id']; // <-- corretto
+                $_SESSION['user_id'] = $user['id'];
                 header("Location: home.php");
                 exit();
             } else {
@@ -46,6 +48,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->close();
     }
 }
+
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -99,22 +103,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             text-align: center;
             margin-bottom: 10px;
         }
+
+        .register-link {
+            margin-top: 10px;
+            display: block;
+            text-align: center;
+        }
+
+        .register-link a {
+            display: inline-block;
+            padding: 8px 12px;
+            background-color: #6c757d;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
 <div class="login-box">
     <h2>Login</h2>
-    <?php if (isset($error)): ?>
-        <div class="error"><?= $error ?></div>
+    <?php if (!empty($error)): ?>
+        <div class="error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
     <form method="post" action="<?= htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-        <input type="email" name="email" placeholder="Email" required />
+        <input type="email" name="email" placeholder="Email" required value="<?= isset($email) ? htmlspecialchars($email) : '' ?>" />
         <input type="password" name="password" placeholder="Password" required />
         <button type="submit">Accedi</button>
-        <a href="registrazione.php">
-            <button type="button" style="margin-top: 10px; background-color: #6c757d;">Registrati</button>
-        </a>
     </form>
+    <div class="register-link">
+        <a href="registrazione.php">Registrati</a>
+    </div>
 </div>
 </body>
 </html>
